@@ -1,3 +1,14 @@
+# To test the extension:
+
+- Install recommended extensions
+- Press F5 
+- You can open the JS Console if needed: command + shift + p > Developer: Open Webview Developer Tools
+- Go to settings > chatbotextension and add needed values (works with standard chatGPT endpoint `https://api.openai.com/v1/chat/completions`)
+- command + shift + p > Open Chat Panel
+- Chat away
+
+
+
 # chatbotextension README
 
 This is the README for your extension "chatbotextension". After writing up a brief description, we recommend including the following sections.
