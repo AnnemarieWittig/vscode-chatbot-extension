@@ -1,0 +1,65 @@
+{
+  "name": "chatbotextension",
+  "displayName": "ChatbotExtension",
+  "description": "An extension that provides a chatbot interface within VSCode where you can connect ChatGPT or your own chatbot.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.86.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./src/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Chatbot Extension",
+      "properties": {
+        "chatbotextension.endpoint": {
+          "type": "string",
+          "default": "",
+          "description": "The endpoint for the chatbot API."
+        },
+        "chatbotextension.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "The API key for the chatbot API."
+        },
+        "chatbotextension.model": {
+          "type": "string",
+          "default": "",
+          "description": "The model used (e.g. gpt-3.5-turbo), if needed."
+        },
+        "chatbotextension.temperature": {
+          "type": "number",
+          "default": 0.7,
+          "description": "The temperature for the model, if needed."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "chatbotextension.openView",
+        "title": "Open Chatbot Panel"
+      },
+      {
+        "command": "chatbotextension.sendMessage",
+        "title": "Send Message"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.86.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.9"
+  }
+}
