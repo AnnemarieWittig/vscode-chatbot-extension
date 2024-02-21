@@ -14,14 +14,19 @@ function activate(context) {
             }
         );
 
-		const sseUri = panel.webview.asWebviewUri(vscode.Uri.file(
-			path.join(context.extensionPath, 'src', 'libs', 'sse.js')
-		));
+		const chatstyles = panel.webview.asWebviewUri(vscode.Uri.file(
+			path.join(context.extensionPath, 'src', 'styles', 'style-chat.css')
+		)); 
+
+		const colorstyles = panel.webview.asWebviewUri(vscode.Uri.file(
+			path.join(context.extensionPath, 'src', 'styles', 'style-colors.css')
+		)); 
 
         const htmlPath = path.join(context.extensionPath, 'src', 'chatbot.html');
         let htmlContent = fs.readFileSync(htmlPath, 'utf8');
-
-		htmlContent = htmlContent.replace('{{sseUri}}', sseUri.toString());
+		
+		htmlContent = htmlContent.replace('{{colorsUri}}', chatstyles.toString());
+		htmlContent = htmlContent.replace('{{chatUri}}', colorstyles.toString());
 
         panel.webview.html = htmlContent;
 
@@ -77,24 +82,6 @@ function sendConfigToWebview(panel) {
     panel.webview.postMessage({ command: 'setConfig', endpoint, apiKey, model, temperature });
 }
 
-
-// const Chatbot = require('./chatbot');
-
-// function activate(context) {
-//     const chatbot = new Chatbot();
-//     vscode.window.registerTreeDataProvider('chatbotextension.view', chatbot);
-
-//     let disposable = vscode.commands.registerCommand('chatbotextension.sendMessage', async function () {
-//         const message = await vscode.window.showInputBox({ prompt: 'Enter your message:' });
-//         if (message) {
-//             chatbot.sendMessage(`User: ${message}`);
-//             chatbot.sendMessage('Chatbot: This is a default message.');
-//         }
-//     });
-
-//     context.subscriptions.push(disposable);
-// }
-// This method is called when your extension is deactivated
 function deactivate() {}
 
 module.exports = {

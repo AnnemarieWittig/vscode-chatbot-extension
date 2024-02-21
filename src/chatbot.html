@@ -8,8 +8,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>var exports = {};</script>
     <!-- TODO: Properly import the sse.js file -->
-    <!-- <script src="{{ url_for('static', filename='libs/sse-wrapper/sse.js') }}"></script> -->
-    <script src="{{sseUri}}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -18,9 +16,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <!-- and it's easy to individually load additional languages -->
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles/dracula.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style-colors.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style-chat.css') }}" /> -->
+    <link rel="stylesheet" href="{{colorsUri}}" />
+    <link rel="stylesheet" href="{{chatUri}}" />
 </head>
 
 <body>
@@ -31,8 +28,17 @@
         </div>
 
         <!-- <main class="msger-chat" onscroll="handle_auto_scroll()"> -->
-        <main class="msger-chat" style="overflow-y: auto;">
+        <main class="msger-chat">
         </main>
+
+        <div class="chat-bubble">
+            <span class="typing-text">typing</span>
+            <div class="typing">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
 
         <div class="context-display">
             <p class="context-selection"></p>
@@ -42,13 +48,6 @@
                 placeholder="Geben Sie eine Nachricht ein..."></textarea>
             <button type="submit" class="msger-send-btn">Senden</button>
         </form>
-
-        <div class=loading-spinner-area>
-            <div class="dot-pulse"></div>
-            <p class=loading-msg>Antwort wird generiert
-            <div class="dot-pulse"></div>
-            </p>
-        </div>
     </div>
     </div>
     <!-- partial -->
@@ -58,13 +57,11 @@
         const msgerInput = get(".msger-input");
         const msgerInputArea = get(".msger-inputarea");
         const msgerChat = get(".msger-chat");
-        const msger = get(".msger");
         const msgLoadingSpinner = get(".loading-spinner-area");
+        const msgLoader = get(".chat-bubble");
         const contextDisplay = get(".context-display");
         const contextSelection = get(".context-selection");
-        //const tokenDisplay = get(".token-display")
-        //const intention_display = get(".intention-display")
-        var promptID = 0
+        const title = get(".title");
 
         // Icons made by Freepik from www.flaticon.com
         const BOT_IMG = "url(https://cdn-icons-png.flaticon.com/512/6134/6134346.png)";
@@ -74,20 +71,10 @@
         const USER_DISPLAY_NAME = "You";
         const USER_INTERNAL_NAME = "user";
 
-        const MODEL = window.model;
-        const ENDPOINT = window.endpoint;
-        const API_KEY = window.apiKey;
-        const TEMPERATURE = window.temperature;
-
-
         var conversation_messages = []
-
-        let api_key = '';
-        let endpoint = '';
 
         let conversation_id = parseInt("{{ conversation_id }}");
         let current_bot_message = "";
-        let current_prompt = "";
         var auto_scroll = true;
 
         $('#textInput').keydown(function (e) {
@@ -124,9 +111,9 @@
 
         function display_current_messages() {
             if (this.conversation_messages.length === 0) {
-                conversation_messages = [{"role": BOT_INTERNAL_NAME, "content": "I am your helpful assistant!", "id": crypto.randomUUID(), "date": formatDate(new Date())}]
+                conversation_messages = [{ "role": BOT_INTERNAL_NAME, "content": "I am your helpful assistant!", "id": crypto.randomUUID(), "date": formatDate(new Date()) }]
             }
-            msgLoadingSpinner.style.display = "none";
+            msgLoader.style.display = "none";
             this.conversation_messages.forEach((message) => {
                 appendMessage(message["role"], message["content"], message["id"], message["date"]);
             })
@@ -145,7 +132,6 @@
             console.log(msgText)
             current_prompt = msgText
 
-            //msgerChat.insertAdjacentHTML("beforeend", '<p>User: ' + msgText + '</p>');
             appendMessage(USER_INTERNAL_NAME, msgText, crypto.randomUUID(), formatDate(new Date()));
             getBotResponse(msgText);
 
@@ -154,49 +140,47 @@
 
         }
 
-
         function appendMessage(name, text, id, datetime) {
 
-            this.conversation_messages.push({"role": name, "content": text, "id": id, "date": datetime})
-            let img = PERSON_IMG
+            this.conversation_messages.push({ "role": name, "content": text, "id": id, "date": datetime })
+            let img = "";
+            let class_name = "";
+            let display_name = "";
+            let display_text = "";
+
 
             let msgHTML = ""
 
             if (name === BOT_INTERNAL_NAME) {
                 img = BOT_IMG
-                msgHTML = `
+                class_name = BOT_INTERNAL_NAME
+                display_name = BOT_DISPLAY_NAME
+                console.log(text)
+                display_text = marked.parse(text)
+                console.log(display_text)
+            } else if (name === USER_INTERNAL_NAME) {
+                img = PERSON_IMG;
+                class_name = USER_INTERNAL_NAME;
+                display_name = USER_DISPLAY_NAME;
+                display_text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;').replace(/ /g, '&nbsp;');
+            }
+
+
+            msgHTML = `
         
-            <div class="msg ${BOT_INTERNAL_NAME}-msg" >
+            <div class="msg ${class_name}-msg" >
             <div class="msg-img" style="background-image: ${img}"></div>
             <div class="msg-bubble">
                 <div class="msg-info">
-                    <div class="msg-info-name">${BOT_DISPLAY_NAME}</div>
+                    <div class="msg-info-name">${display_name}</div>
                         <div>
                         <div class="msg-info-time">${datetime}</div>
                         </div>
                     </div>
-
-                    <div class="msg-text" id=${id}>${marked.parse(text)}</div>
+        
+                    <div class="msg-text" id=${id}>${display_text}</div>
                 </div>
             </div>`;
-
-            } else if (name === USER_INTERNAL_NAME){
-                msgHTML = `
-            <div class="msg ${USER_INTERNAL_NAME}-msg" >
-                <div class="msg-img" style="background-image: ${img}"></div>
-
-                <div class="msg-bubble">
-                    <div class="msg-info">
-                        <div class="msg-info-name">${USER_DISPLAY_NAME}</div>
-                        <div class="msg-info-time">${datetime}</div>
-                    </div>
-
-                    <div class="msg-text" id=${id}>${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;').replace(/ /g, '&nbsp;')}</div>
-                </div>
-            </div>
-            `;
-            }
-
 
             msgerChat.insertAdjacentHTML("beforeend", msgHTML);
             msgerChat.scrollTop = msgerChat.scrollHeight;
@@ -214,89 +198,6 @@
             })
         }
 
-        function set_token_number() {
-            $.ajax({
-                type: "GET",
-                url: window.location.origin + '{{path_prefix}}' + "/get_conversation_tokens?conv_id=" + conversation_id.toString(),
-                success: (token_message) => {
-                    tokenDisplay.innerHTML = token_message;
-                }
-            })
-        }
-
-        function load_prior_messages() {
-            $.ajax({
-                type: "GET",
-                url: window.location.origin + '{{path_prefix}}' + "/get_prior_messages?conv_id=" + conversation_id.toString(),
-                success: (response) => {
-                    response.forEach((message) => {
-                        if (message["name"] === BOTNAME) {
-                            appendMessage(message["name"], message["text"], message["id"], message["date"])
-                            msgElement = document.getElementById(message["id"])
-                            msgElement.outerHTML = generateBotHTML(message["id"], message["text"]);
-                            highlightCode(message["id"]);
-
-                        } else {
-                            appendMessage(message["name"], message["text"], message["id"] + "-user", message["date"])
-                        }
-                    })
-                    showAllFeedbackButtons();
-                }
-            })
-        }
-
-        function change_conv_button_color(conv_id) {
-            document.getElementById("conv-btn-" + conversation_id).className = "conv-btn";
-            document.getElementById("conv-btn-" + conv_id).className = "conv-btn-active";
-        }
-
-        //        load_prior_messages();
-        //        change_conv_button_color(conversation_id);
-        //        set_token_number();
-        //        toggleQuestionnaireButton();
-        //load_conversation_intention(conversation_id);
-
-
-/*
-        function load_conversation(conv_id) {
-            change_conv_button_color(conv_id)
-            conversation_id = conv_id;
-            delete_current_messages();
-            load_prior_messages();
-            set_token_number();
-            hide_text_input_if_not_highest();
-            msgerChat.scrollTop = msgerChat.scrollHeight;
-            //load_conversation_intention();
-        }
-*/
-
-        function load_conversation_title() {
-            $.ajax({
-                type: "GET",
-                url: window.location.origin + '{{path_prefix}}' + "/get_conversation_title?conv_id=" + conversation_id.toString(),
-                success: (response) => {
-                    if (response) {
-                        document.getElementById("conv-btn-" + conversation_id).textContent = response;
-                    }
-                }
-            })
-        }
-
-        function load_conversation_intention() {
-            $.ajax({
-                type: "GET",
-                url: window.location.origin + '{{path_prefix}}' + "/get_conversation_intention?conv_id=" + conversation_id.toString(),
-                success: (response) => {
-                    if (response) {
-                        intention_display.innerHTML = 'Ausgewählter Zweck: ' + response;
-                    } else {
-                        console.log("No intention found.")
-                        intention_display.innerHTML = '';
-                    }
-                }
-            })
-        }
-
         function any_id_bigger(id, conv_buttons) {
 
             for (i = 0; i < conv_buttons.length; i++) {
@@ -310,31 +211,13 @@
             return false
         }
 
-        function hide_text_input_if_not_highest() {
-            conv_buttons = document.getElementsByClassName("conv-btn")
-
-            if (any_id_bigger(conversation_id, conv_buttons)) {
-                msgerInputArea.style.display = "none";
-                msgLoadingSpinner.style.display = "none"
-            } else {
-                msgerInputArea.style.display = "flex";
-                msgLoadingSpinner.style.display = "none"
-            }
-        }
-
-
-        function delete_current_messages() {
-            msgerChat.innerHTML = "";
-            //intention_display.innerHTML = '';
-        }
-
         function getUpdatedConversations() {
             updated_messages = this.conversation_messages;
             if (selectedCode) {
                 let lastMessageIndex = this.conversation_messages.length - 1;
                 if (updated_messages[lastMessageIndex].role === USER_INTERNAL_NAME) {
                     current_content = updated_messages[lastMessageIndex].content;
-                    updated_messages[lastMessageIndex].content = `${current_content} The user sent this code with their request: \`\`\`${selectedCode}\`\`\``; 
+                    updated_messages[lastMessageIndex].content = `${current_content} The user sent this code with their request: \`\`\`${selectedCode}\`\`\``;
                 }
             }
             return updated_messages;
@@ -352,6 +235,12 @@
 
 
         function getBotResponse(userInput) {
+            msgerInputArea.style.display = "none";
+            msgLoader.style.display = "inline-flex";
+
+            console.log(msgerInputArea)
+            console.log(msgerInputArea.style.display)
+
             // Bot Response
             updated_repsonse = getUpdatedConversations();
             payload_response = prepareMessagesForGPT(updated_repsonse);
@@ -361,88 +250,37 @@
                 "temperature": window.temperature
             }
             id = crypto.randomUUID()
-            
+            console.log(JSON.stringify(payload))
+            console.log(window.endpoint)
+
             fetch(`${window.endpoint}`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
+                headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${window.apiKey}`
                 },
                 body: JSON.stringify(payload)
             })
-            .then(response => response.json())
-            .then(data => {
-                // Assuming data contains a property 'text' with the response message
-                console.log(data);
-                response = data["choices"][0]["message"]["content"]
-                if (data && response) {
-                    appendMessage(BOT_INTERNAL_NAME, response, id, formatDate(new Date()));
-                } else {
-                    appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct.", id, formatDate(new Date()));
-                }
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-            // stream_assistant_answer(userInput, id);
-        }
-
-
-        function stream_assistant_answer(prompt, id) {
-            msgerInputArea.style.display = "none";
-            msgLoadingSpinner.style.display = "flex"
-            auto_scroll = true;
-
-            var source = generateEventSource(prompt);
-
-
-            source.addEventListener('message', function (e) {
-                msgElement = document.getElementById(id)
-
-                if (e.data == "") {
-                    // data is only empty if html is returned
-                    error_alert(msgElement, "You have no budget left.")
-                    return
-                }
-
-
-                msg = handleToken(e.data);
-
-
-                if (msg === "<FINISH>") {
-                    console.log("Finish token found.")
-                    console.log(msg)
-
-                    setPromptID();
+                .then(response => response.json())
+                .then(data => {
+                    // Assuming data contains a property 'text' with the response message
+                    console.log(data);
+                    response = data["choices"][0]["message"]["content"]
+                    if (data && response) {
+                        appendMessage(BOT_INTERNAL_NAME, response, id, formatDate(new Date()));
+                    } else {
+                        appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct inputted and stored.", id, formatDate(new Date()));
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correctly inputted and stored.", id, formatDate(new Date()));
+                })
+                .finally(() => {
+                    // Reset display states after fetch operation completes or fails
                     msgerInputArea.style.display = "flex";
-                    msgLoadingSpinner.style.display = "none";
-                    //load_conversation_title();
-                    //load_advice();
-                    //set_token_number()
-
-                    return
-                }
-
-                if (msg === "<ERROR>") {
-                    error_alert(msgElement, "An error occured during message generation. Please try again.")
-                    return
-                }
-
-                msgElement.outerHTML = generateBotHTML(id, msg);
-                highlightCode(id);
-            });
-
-
-            source.stream()
-            current_bot_message = "";
-        }
-
-        function toggleDisplay(el) {
-            if (el.style.display === "none") {
-                el.style.display = "flex"
-            } else {
-                el.style.display = "none"
-            }
+                    msgLoader.style.display = "none";
+                });
         }
 
         function showAllFeedbackButtons() {
@@ -450,97 +288,6 @@
             for (i = 0; i < btns.length; i++) {
                 btns[i].style.display = "flex";
             }
-        }
-
-
-
-        function handleToken(token) {
-
-            if (token == "<FINISH>") {
-                showAllFeedbackButtons();
-                return token
-            }
-            if (token == "<ERROR>") {
-                return token
-            }
-
-            if (token !== "") {
-                current_bot_message += token;
-                current_bot_message = current_bot_message.replace("<start>", "")
-                current_bot_message = current_bot_message.replace("<end>", "")
-                current_bot_message = current_bot_message.replace("<br/>", "\n")
-                current_bot_message = current_bot_message.replace("<br>", "\n")
-            }
-
-            tmpMsg = current_bot_message
-
-            if ((tmpMsg.match(/```/g) || []).length % 2 != 0) {
-                tmpMsg += " \n```"
-            }
-            if (auto_scroll) {
-                msgerChat.scrollTop = msgerChat.scrollHeight;
-            }
-            return tmpMsg
-        }
-
-        function generateBotHTML(id, msg) {
-            const button = `<pre><button onclick="copyToClipboard(this)">Copy code</button>`
-            const botHTML = `
-          <div class="msg-text" id=${id}>${marked.parse(msg).replace("<pre>", button)}</div>
-      `
-            return botHTML
-        }
-
-        function highlightCode(id) {
-            document.querySelectorAll('pre code').forEach((el) => {
-                if (!el.id) {
-                    el.id = id
-                    hljs.highlightElement(el);
-                }
-
-            });
-
-        }
-
-        function generateEventSource(prompt) {
-            //testen
-            payload = {
-                "model": window.model,
-                "messages": getUpdatedConversations(),
-                "temperature": window.temperature
-            }
-            return new SSE(window.endpoint, {
-                headers: { 'Content-Type': 'text/plain' },
-                payload: JSON.stringify(payload)
-            });
-        }
-
-        function error_alert(msgElement, message) {
-            console.log("An error occured.")
-            msgElement.innerHTML = `<div class="alert">`
-                + message +
-                `</div>`
-            msgerInputArea.style.display = "flex";
-            msgLoadingSpinner.style.display = "none"
-
-        }
-
-        function toggleQuestionnaireButton() {
-            console.log("Checking for voluntary questionnaires...")
-
-            $.ajax({
-                type: "GET",
-                url: window.location.origin + '{{path_prefix}}' + "/check-for-voluntary-questionnaire",
-                dataType: 'json',
-                success: (response) => {
-                    if (response) {
-                        if (response["questionnaire_available"]) {
-                            questionnaireButton.style.display = "inline-block";
-                        }
-                    }
-                }
-            })
-
         }
 
         function copyToClipboard(button) {
@@ -602,14 +349,10 @@
                 contextDisplay.style.display = "flex";
                 contextSelection.innerHTML = `${filename}: lines ${startLine}-${endLine} is sent to the model as context.`;
             }
-
-            // Update the webview's content with the selected text
-            //            document.body.innerHTML = `
-            //                  <h1>Selected Code:</h1>
-            //                <pre>${text}</pre>`;
         }
 
         display_current_messages();
+        title.innerHTML = "Chat";
 
     </script>
 </body>

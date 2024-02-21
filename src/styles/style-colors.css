@@ -1,0 +1,14 @@
+:root {
+  --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --msger-bg: #ffffff;
+  --border: 2px solid #ddd;
+  --button-bg-color: hsl(0, 0%, 15%);
+  --chat-txt-color: #2f2f30;
+  --button-color: hsl(0, 1%, 86%);
+  --button-hover-color: hsl(0, 0%, 56%);
+  --chat-width: 85vw;
+  --send-color: rgb(157,101,138);
+  --send-color-faded-1: rgba(157,101,138, 0.7);
+  --send-color-faded-2: rgba(157,101,138, 0.4);
+  --send-color-light: rgb(243,236,240);
+}
