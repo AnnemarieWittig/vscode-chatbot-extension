@@ -59,7 +59,7 @@
             <textarea type="text" class="msger-input" id="textInput" autocomplete="off"
                 placeholder="Geben Sie eine Nachricht ein..."></textarea>
             <button type="submit" class="msger-send-btn">
-                <img class="theme-img" src="{{sendicon}}" style="filter: invert(100%) brightness(50%) saturate(0%);"
+                <img class="theme-img" src="{{sendicon}}"
                     alt="Send Message">
             </button>
         </form>
@@ -82,10 +82,11 @@
         const newChatBtn = get(".new-chat-btn")
 
         // Icons made by Freepik from www.flaticon.com
-        const BOT_IMG = "url(https://cdn-icons-png.flaticon.com/512/6134/6134346.png)";
-        const PERSON_IMG = 'url(https://cdn-icons-png.flaticon.com/512/5087/5087579.png)';
+        const BOT_IMG = "url({{botimage}})";
+        const PERSON_IMG = 'url({{userimage}})';
         const DARKMODE_IMAGE = "{{darkmodeimage}}";
         const LIGHTMODE_IMAGE = "{{lightmodeimage}}";
+        console.log(BOT_IMG)
 
         const BOT_INTERNAL_NAME = "assistant";
         const BOT_DISPLAY_NAME = "Assistant";

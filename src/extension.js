@@ -2,6 +2,22 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 
+function getCssWebUri (panel, context, filename) {
+	let styles = panel.webview.asWebviewUri(vscode.Uri.file(
+		path.join(context.extensionPath, 'src', 'styles', filename)
+	)); 
+
+	return styles;
+}
+
+function getIconWebUri (panel, context, filename) {
+	let icon = panel.webview.asWebviewUri(vscode.Uri.file(
+		path.join(context.extensionPath, 'src', 'icons', filename)
+	)); 
+
+	return icon;
+}
+
 function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand('chatbotextension.openView', function () {
         const panel = vscode.window.createWebviewPanel(
@@ -14,29 +30,15 @@ function activate(context) {
             }
         );
 
-		const chatstyles = panel.webview.asWebviewUri(vscode.Uri.file(
-			path.join(context.extensionPath, 'src', 'styles', 'style-chat.css')
-		)); 
+		const chatstyles = getCssWebUri(panel, context, 'style-chat.css');
+		const colorstyles = getCssWebUri(panel, context, 'style-colors.css');
 
-		const colorstyles = panel.webview.asWebviewUri(vscode.Uri.file(
-			path.join(context.extensionPath, 'src', 'styles', 'style-colors.css')
-		)); 
-
-		const lightmode = panel.webview.asWebviewUri(vscode.Uri.file(
-			path.join(context.extensionPath, 'src', 'icons', 'light-mode-toggle-icon.png')
-		)); 
-
-		const darkmode = panel.webview.asWebviewUri(vscode.Uri.file(
-			path.join(context.extensionPath, 'src', 'icons', 'dark-mode-toggle-icon.png')
-		)); 
-
-		const send = panel.webview.asWebviewUri(vscode.Uri.file(
-			path.join(context.extensionPath, 'src', 'icons', 'send-icon.png')
-		)); 
-
-		const newchat = panel.webview.asWebviewUri(vscode.Uri.file(
-			path.join(context.extensionPath, 'src', 'icons', 'chat-add-icon.png')
-		)); 
+		const lightmode = getIconWebUri(panel, context, 'light-mode-toggle-icon.png');
+		const darkmode = getIconWebUri(panel, context, 'dark-mode-toggle-icon.png');
+		const send = getIconWebUri(panel, context, 'send-icon.png');
+		const newchat = getIconWebUri(panel, context, 'chat-add-icon.png');
+		const bot = getIconWebUri(panel, context, 'bot-icon.png');
+		const user = getIconWebUri(panel, context, 'user-icon.png');
 
         const htmlPath = path.join(context.extensionPath, 'src', 'chatbot.html');
         let htmlContent = fs.readFileSync(htmlPath, 'utf8');
@@ -47,6 +49,8 @@ function activate(context) {
 		htmlContent = htmlContent.replace('{{lightmodeimage}}', lightmode.toString());
 		htmlContent = htmlContent.replace('{{sendicon}}', send.toString());
 		htmlContent = htmlContent.replace('{{newbutton}}', newchat.toString());
+		htmlContent = htmlContent.replace('{{botimage}}', bot.toString());
+		htmlContent = htmlContent.replace('{{userimage}}', user.toString());
 
         panel.webview.html = htmlContent;
 

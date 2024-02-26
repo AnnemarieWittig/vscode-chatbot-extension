@@ -153,12 +153,14 @@ button {
 .theme-btn {
   border: 0px;
   background: unset;
-  width: 6vw;
-  height: 3vw;
+  width: 7vh;
+  height: 3vh;
   border-radius: 20px;
   padding: 2px; 
   min-height: 20px;
-  min-width: 40px;
+  min-width: 30px;
+  max-height: 30px;
+  max-width: 50px;
 }
 
 .theme-img {
@@ -172,12 +174,15 @@ button {
 .new-chat-btn {
   border: 0px;
   background: unset;
-  width: 6vw;
-  height: 3vw;
+  width: 7vh;
+  height: 3vh;
   border-radius: 20px;
   padding: 2px; 
   min-height: 20px;
-  min-width: 40px;}
+  min-width: 30px;
+  max-height: 50px;
+  max-width: 50px;
+}
 
 form {
   background-color: #fff;
