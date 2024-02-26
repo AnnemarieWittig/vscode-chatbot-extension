@@ -24,7 +24,19 @@
 
     <div class="msger">
         <div class="head-bar">
-            <p class="title">GPT-4</p>
+            <div>
+                <p class="title">GPT-4</p>
+            </div>
+            <div>
+                <button class="new-chat-btn">
+                    <img class="new-chat-img" src="{{newbutton}}"
+                        alt="Toggle Theme">
+                </button>
+                <button class="theme-btn">
+                    <img class="theme-img" src="{{buttonimage}}"
+                        alt="Toggle Theme">
+                </button>
+            </div>
         </div>
 
         <!-- <main class="msger-chat" onscroll="handle_auto_scroll()"> -->
@@ -46,7 +58,10 @@
         <form class="msger-inputarea">
             <textarea type="text" class="msger-input" id="textInput" autocomplete="off"
                 placeholder="Geben Sie eine Nachricht ein..."></textarea>
-            <button type="submit" class="msger-send-btn">Senden</button>
+            <button type="submit" class="msger-send-btn">
+                <img class="theme-img" src="{{sendicon}}" style="filter: invert(100%) brightness(50%) saturate(0%);"
+                    alt="Send Message">
+            </button>
         </form>
     </div>
     </div>
@@ -62,10 +77,16 @@
         const contextDisplay = get(".context-display");
         const contextSelection = get(".context-selection");
         const title = get(".title");
+        const themeBtn = get(".theme-btn")
+        const themeImg = get(".theme-img")
+        const newChatBtn = get(".new-chat-btn")
 
         // Icons made by Freepik from www.flaticon.com
         const BOT_IMG = "url(https://cdn-icons-png.flaticon.com/512/6134/6134346.png)";
         const PERSON_IMG = 'url(https://cdn-icons-png.flaticon.com/512/5087/5087579.png)';
+        const DARKMODE_IMAGE = "{{darkmodeimage}}";
+        const LIGHTMODE_IMAGE = "{{lightmodeimage}}";
+
         const BOT_INTERNAL_NAME = "assistant";
         const BOT_DISPLAY_NAME = "Assistant";
         const USER_DISPLAY_NAME = "You";
@@ -73,7 +94,7 @@
 
         var conversation_messages = []
 
-        let conversation_id = parseInt("{{ conversation_id }}");
+        let conversation_id = crypto.randomUUID();//parseInt("{{ conversation_id }}");
         let current_bot_message = "";
         var auto_scroll = true;
 
@@ -83,6 +104,41 @@
                 sendMessage();
             }
         });
+
+        if (localStorage.getItem('darkmode')) {
+            document.body.classList.add('darkmode');
+            themeImg.src = DARKMODE_IMAGE;
+        } else {
+            themeImg.src = LIGHTMODE_IMAGE;
+        }
+
+        themeBtn.addEventListener('click', function (e) {
+            e.preventDefault;
+
+            if (document.body.classList.contains('darkmode')) {
+                // Turn off
+                document.body.classList.remove('darkmode')
+                // Switch to light mode
+                themeImg.src = LIGHTMODE_IMAGE;
+                localStorage.removeItem('darkmode')
+            }
+            else {
+                document.body.classList.add('darkmode');
+                themeImg.src = DARKMODE_IMAGE;
+                localStorage.setItem('darkmode', true)
+            }
+        })
+
+        newChatBtn.addEventListener('click', function (e) {
+            e.preventDefault;
+            //var response = confirm("Are you sure you want to start a new chat? This will delete the current conversation.");
+            //if (response) {
+                conversation_messages = [];
+                conversation_id = crypto.randomUUID();
+                msgerChat.innerHTML = "";
+                display_current_messages();
+            //}
+        })
 
         msgerForm.addEventListener('submit', function (event) {
             event.preventDefault();
@@ -186,31 +242,6 @@
             msgerChat.scrollTop = msgerChat.scrollHeight;
         }
 
-        function setPromptID() {
-            $.ajax({
-                type: "GET",
-                url: window.location.origin + '{{path_prefix}}' + "/get_last_prompt_id",
-                success: (id) => {
-                    feedbackButtons = document.getElementsByClassName("feedback-button")
-                    feedbackButtons[feedbackButtons.length - 1].onclick = function () { feedbackBinary(id); }
-
-                }
-            })
-        }
-
-        function any_id_bigger(id, conv_buttons) {
-
-            for (i = 0; i < conv_buttons.length; i++) {
-                console.log(parseInt(conv_buttons[i].id.replace("conv-btn-", "")))
-                console.log(conversation_id)
-                if (parseInt(conv_buttons[i].id.replace("conv-btn-", "")) > conversation_id) {
-
-                    return true
-                }
-            }
-            return false
-        }
-
         function getUpdatedConversations() {
             updated_messages = this.conversation_messages;
             if (selectedCode) {
@@ -233,11 +264,10 @@
             });
         }
 
-
-        function getBotResponse(userInput) {
+        async function getBotResponse(userInput) {
             msgerInputArea.style.display = "none";
             msgLoader.style.display = "inline-flex";
-
+            
             console.log(msgerInputArea)
             console.log(msgerInputArea.style.display)
 
@@ -310,8 +340,6 @@
                 console.error('Failed to copy to clipboard: ', error);
             });
         }
-
-
 
         // Utils
         function get(selector, root = document) {

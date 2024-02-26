@@ -22,11 +22,31 @@ function activate(context) {
 			path.join(context.extensionPath, 'src', 'styles', 'style-colors.css')
 		)); 
 
+		const lightmode = panel.webview.asWebviewUri(vscode.Uri.file(
+			path.join(context.extensionPath, 'src', 'icons', 'light-mode-toggle-icon.png')
+		)); 
+
+		const darkmode = panel.webview.asWebviewUri(vscode.Uri.file(
+			path.join(context.extensionPath, 'src', 'icons', 'dark-mode-toggle-icon.png')
+		)); 
+
+		const send = panel.webview.asWebviewUri(vscode.Uri.file(
+			path.join(context.extensionPath, 'src', 'icons', 'send-icon.png')
+		)); 
+
+		const newchat = panel.webview.asWebviewUri(vscode.Uri.file(
+			path.join(context.extensionPath, 'src', 'icons', 'chat-add-icon.png')
+		)); 
+
         const htmlPath = path.join(context.extensionPath, 'src', 'chatbot.html');
         let htmlContent = fs.readFileSync(htmlPath, 'utf8');
 		
 		htmlContent = htmlContent.replace('{{colorsUri}}', chatstyles.toString());
 		htmlContent = htmlContent.replace('{{chatUri}}', colorstyles.toString());
+		htmlContent = htmlContent.replace('{{darkmodeimage}}', darkmode.toString());
+		htmlContent = htmlContent.replace('{{lightmodeimage}}', lightmode.toString());
+		htmlContent = htmlContent.replace('{{sendicon}}', send.toString());
+		htmlContent = htmlContent.replace('{{newbutton}}', newchat.toString());
 
         panel.webview.html = htmlContent;
 
@@ -63,7 +83,7 @@ function activate(context) {
 							text: text, 
 							filename: relativeFilePath, // Now sending relative path
 							startLine: startLine, 
-							endLine: endLine 
+							endLine: endLine
 						});
                     }
                 }

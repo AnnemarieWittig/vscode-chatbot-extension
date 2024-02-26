@@ -1,14 +1,40 @@
 :root {
   --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   --msger-bg: #ffffff;
+  --msger-inputarea-bg: #ddd;
+  --msger-input-bg: #ffffff;
   --border: 2px solid #ddd;
   --button-bg-color: hsl(0, 0%, 15%);
   --chat-txt-color: #2f2f30;
   --button-color: hsl(0, 1%, 86%);
-  --button-hover-color: hsl(0, 0%, 56%);
+  --button-hover-color: hsl(0deg 0% 75.65%);
   --chat-width: 85vw;
   --send-color: rgb(157,101,138);
   --send-color-faded-1: rgba(157,101,138, 0.7);
   --send-color-faded-2: rgba(157,101,138, 0.4);
   --send-color-light: rgb(243,236,240);
+  --header-bg-color: #f5fafc;
+  --header-txt-color: grey;
+  --filter: invert(100%) brightness(50%) saturate(0%);
+}
+
+
+.darkmode {
+  --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --msger-bg: #1E1E1E;
+  --msger-inputarea-bg: #3a3a3a;
+  --msger-input-bg: #2f2f30;
+  --border: 2px solid #2f2f30;
+  --button-bg-color: hsl(0, 0%, 35%);
+  --chat-txt-color: #D4D4D4;
+  --button-color: hsl(0, 1%, 86%);
+  --button-hover-color: rgb(67 63 65);
+  --chat-width: 85vw;
+  --send-color: rgb(106, 68, 94);
+  --send-color-faded-1: rgba(106, 68, 94, 0.7);
+  --send-color-faded-2: rgba(106, 68, 94, 0.4);
+  --send-color-light: rgb(243,236,240);
+  --header-bg-color: rgb(55, 42, 51);
+  --header-txt-color: #D4D4D4;
+  --filter: invert(100%) brightness(80%) saturate(0%);
 }
