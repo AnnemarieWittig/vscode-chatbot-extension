@@ -167,6 +167,12 @@ button {
   filter: var(--filter);
 }
 
+.context-selection {
+  color: black;
+  filter: var(--filter);
+  text-align: center;
+}
+
 .new-chat-img {
   filter: var(--filter);
 }
