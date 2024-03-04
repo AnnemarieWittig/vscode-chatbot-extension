@@ -396,9 +396,8 @@ p {
 pre {
   display: block;
   position: relative;
-  background-color: #1e1e1e;
+  background-color: var(--pre-bg);
   color: #fff;
-  border: 1px solid #ddd;
   border-radius: 4px;
   padding: 25px;
   font-size: 12px;

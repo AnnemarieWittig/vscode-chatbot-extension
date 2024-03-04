@@ -40,7 +40,7 @@
         </div>
 
         <!-- <main class="msger-chat" onscroll="handle_auto_scroll()"> -->
-        <main class="msger-chat">
+        <main class="msger-chat" onscroll="handle_auto_scroll()">
         </main>
 
         <div class="chat-bubble">
@@ -154,7 +154,6 @@
                     const filename = message.filename;
                     const startLine = message.startLine;
                     const endLine = message.endLine;
-                    // Call your updateWebview function
                     updateWebview(text, filename, startLine, endLine);
                     break;
                 case 'setConfig':
@@ -162,6 +161,7 @@
                     window.apiKey = message.apiKey;
                     window.model = message.model;
                     window.temperature = message.temperature;
+                    window.enhancedRequest = message.enhancedRequest;
                     break;
             }
         });
@@ -213,7 +213,9 @@
                 class_name = BOT_INTERNAL_NAME
                 display_name = BOT_DISPLAY_NAME
                 console.log(text)
+                const button = `<pre><button onclick="copyToClipboard(this)">Copy code</button>`
                 display_text = marked.parse(text)
+                display_text = display_text.replace("<pre>", button)
                 console.log(display_text)
             } else if (name === USER_INTERNAL_NAME) {
                 img = PERSON_IMG;
@@ -255,34 +257,40 @@
             return updated_messages;
         }
 
-        function prepareMessagesForGPT(messages) {
-            // Drop all values in each message in the message array except for role and content
-            return messages.map((message) => {
-                return {
-                    role: message.role,
-                    content: message.content
-                }
-            });
+        function prepareMessages(messages, keepId) {
+            if (!keepId) {
+                // Drop all values in each message in the message array except for role and content
+                return messages.map((message) => {
+                    return {
+                        role: message.role,
+                        content: message.content
+                    }
+                });
+            }
+            else {
+                return messages
+            }
         }
 
         async function getBotResponse(userInput) {
             msgerInputArea.style.display = "none";
             msgLoader.style.display = "inline-flex";
-            
-            console.log(msgerInputArea)
-            console.log(msgerInputArea.style.display)
+            console.log(window.enhancedRequest);
+            let enhancedRequest = window.enhancedRequest;
+            console.log(enhancedRequest);
 
             // Bot Response
             updated_repsonse = getUpdatedConversations();
-            payload_response = prepareMessagesForGPT(updated_repsonse);
+            payload_response = prepareMessages(updated_repsonse, enhancedRequest);
             payload = {
                 "model": window.model,
                 "messages": payload_response,
                 "temperature": window.temperature
             }
+            if (enhancedRequest) {
+                payload["conversation_id"] = conversation_id;
+            }
             id = crypto.randomUUID()
-            console.log(JSON.stringify(payload))
-            console.log(window.endpoint)
 
             fetch(`${window.endpoint}`, {
                 method: 'POST',
@@ -300,12 +308,12 @@
                     if (data && response) {
                         appendMessage(BOT_INTERNAL_NAME, response, id, formatDate(new Date()));
                     } else {
-                        appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct inputted and stored.", id, formatDate(new Date()));
+                        appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
                     }
                 })
                 .catch((error) => {
                     console.error('Error:', error);
-                    appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correctly inputted and stored.", id, formatDate(new Date()));
+                    appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
                 })
                 .finally(() => {
                     // Reset display states after fetch operation completes or fails

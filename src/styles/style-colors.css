@@ -15,6 +15,7 @@
   --send-color-light: rgb(243,236,240);
   --header-bg-color: #f5fafc;
   --header-txt-color: grey;
+  --pre-bg: black;
   --filter: invert(100%) brightness(50%) saturate(0%);
 }
 
@@ -36,5 +37,6 @@
   --send-color-light: rgb(243,236,240);
   --header-bg-color: rgb(55, 42, 51);
   --header-txt-color: #D4D4D4;
+  --pre-bg: black;
   --filter: invert(100%) brightness(80%) saturate(0%);
 }

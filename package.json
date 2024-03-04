@@ -34,6 +34,11 @@
           "type": "number",
           "default": 0.7,
           "description": "The temperature for the model, if needed."
+        },
+        "chatbotextension.enhancedRequest": {
+          "type": "boolean",
+          "default": false,
+          "description": "The requests sent to the model can be enhanced with IDs and times. Must be false when using chatGPT."
         }
       }
     },

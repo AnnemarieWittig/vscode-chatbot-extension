@@ -102,8 +102,9 @@ function sendConfigToWebview(panel) {
     const apiKey = config.get('apiKey');
     const model = config.get('model');
     const temperature = config.get('temperature');
+    const enhancedRequest = config.get('enhancedRequest');
 
-    panel.webview.postMessage({ command: 'setConfig', endpoint, apiKey, model, temperature });
+    panel.webview.postMessage({ command: 'setConfig', endpoint, apiKey, model, temperature, enhancedRequest});
 }
 
 function deactivate() {}

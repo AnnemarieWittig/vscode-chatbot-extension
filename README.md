@@ -1,76 +1,68 @@
-# To test the extension:
+# Chatbot Interface for VS Code Extension README
 
-- Install recommended extensions
-- Press F5 
-- You can open the JS Console if needed: command + shift + p > Developer: Open Webview Developer Tools
-- Go to settings > chatbotextension and add needed values (works with standard chatGPT endpoint `https://api.openai.com/v1/chat/completions`)
-- command + shift + p > Open Chat Panel
-- Chat away
-
-
-
-# chatbotextension README
-
-This is the README for your extension "chatbotextension". After writing up a brief description, we recommend including the following sections.
+## Introduction
+This README document outlines the setup and usage of the Chatbot Interface VS Code Extension. This extension enables a powerful chatbot interface within the Visual Studio Code environment, allowing developers to interact with AI models directly from their editor. The chatbot can assist with coding questions, explanations, and much more, integrating seamlessly with various AI services.
 
 ## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- **Customizable AI Endpoint**: Connect to any AI service that accepts and responds in a compatible format with OpenAI's API.
+- **Flexible Configuration**: Set up the extension with your API key, preferred model, and interaction settings to tailor the chatbot's responses to your needs.
+- **Enhanced Request Option**: Toggle the enhanced request feature to include additional request metadata, compatible with advanced endpoint configurations.
+- **Integrated Chat Interface**: Access the chatbot directly within VS Code, allowing for real-time interaction without leaving your development environment.
+- **Code Context Awareness**: Automatically includes selected code in your queries, enabling context-specific assistance from the chatbot.
 
 ## Extension Settings
+To configure the Chatbot Interface for your development needs, navigate to the extension settings within VS Code. The easiest way to find these settings is to search for `chatbotextension` in the settings menu. The following options are available for customization:
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+1. **Endpoint**: Specify the endpoint URL to which the chatbot requests will be sent.
+2. **API Key**: Enter the API key required for authenticating with your chosen AI service.
+3. **Temperature**: Adjust the response generation temperature to control the variability of the chatbot's replies.
+4. **Model**: Select the model you wish to use for generating responses.
+5. **Enhanced Request**: Toggle this option to `false` when using OpenAI endpoints. This affects the request format sent to the service.
 
-For example:
+### Request Formats
+Depending on the `Enhanced Request` setting, the request body sent to the AI service will vary:
 
-This extension contributes the following settings:
+- **Standard Request (Enhanced Request = false)**
+```json
+{
+  "model": "given model",
+  "messages": [
+    {"role": "assistant", "content": "I am your helpful assistant!"},
+    {"role": "user", "content": "a user prompt"}
+  ],
+  "temperature": 0.7
+}
+```
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+- **Enhanced Request (Enhanced Request = true)**
+```json
+{
+  "model": "given model",
+  "messages": [
+    {"role": "assistant", "content": "I am your helpful assistant!", "id": "80129c16-d42f-4131-a858-896e50eea248", "date": "14:34"},
+    {"role": "user", "content": "a user prompt", "id": "170ae6a7-4f73-46a1-ac7c-148849952667", "date": "14:34"}
+  ],
+  "temperature": 0.7,
+  "conversation_id": "87e29190-48fb-4ddf-8b14-a34c57d46333"
+}
+```
 
-## Known Issues
+### Expected Response Format
+The AI service should respond with a JSON body, where the reply text can be found at the path `data["choices"][0]["message"]["content"]`. This is the standard OpenAI layout to allow directly including ChatGPT.
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+## Usage
+To open the chatbot interface within VS Code:
 
-## Release Notes
+1. Press `Cmd` + `Shift` + `P` (Mac) or `Ctrl` + `Shift` + `P` (Windows/Linux) to open the command palette.
+2. Type `Open Chatbot` and select the command to launch the chatbot interface.
 
-Users appreciate release notes as you update your extension.
+### Chat Interface Features
+- **Sending Messages**: Type your message and press `Enter` to send. Use `Shift` + `Enter` for inserting a new line.
+- **Theme Switching**: Toggle between dark and light themes using the button in the upper right corner.
+- **New Chat Session**: Open a new chat session from the interface. Note that chats are not persisted within the system currently.
+- **Code Context**: Any selected code in the editor will be included automatically in your next question, enhancing the chatbot's ability to provide relevant assistance.
 
-### 1.0.0
+Enjoy integrating this powerful chatbot interface into your development workflow, enhancing your productivity and coding efficiency.
 
-Initial release of ...
 
-### 1.0.1
 
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
