@@ -97,9 +97,9 @@ function activate(context) {
 }
 
 function sendConfigToWebview(panel) {
-    const config = vscode.workspace.getConfiguration('chatbotextension');
+    const config = vscode.workspace.getConfiguration('chatbotExtension');
     const endpoint = config.get('endpoint');
-    const apiKey = config.get('apiKey');
+    const apiKey = config.get('API Key');
     const model = config.get('model');
     const temperature = config.get('temperature');
     const enhancedRequest = config.get('enhancedRequest');

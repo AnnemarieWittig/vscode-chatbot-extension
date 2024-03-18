@@ -37,7 +37,9 @@
         "chatbotExtension.temperature": {
           "type": "number",
           "default": 0.7,
-          "description": "The temperature for the model, if needed."
+          "description": "The temperature for the model, if needed.",
+          "minimum": 0,
+          "maximum": 1
         },
         "chatbotExtension.enhancedRequest": {
           "type": "boolean",
