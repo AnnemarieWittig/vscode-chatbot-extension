@@ -92,7 +92,6 @@
         const PERSON_IMG = 'url({{userimage}})';
         const DARKMODE_IMAGE = "{{darkmodeimage}}";
         const LIGHTMODE_IMAGE = "{{lightmodeimage}}";
-        console.log(BOT_IMG)
 
         const BOT_INTERNAL_NAME = "assistant";
         const BOT_DISPLAY_NAME = "Assistant";
@@ -192,7 +191,6 @@
             const msgText = msgerInput.value;
             if (!msgText) return;
 
-            console.log(msgText)
             current_prompt = msgText
 
             appendMessage(USER_INTERNAL_NAME, msgText, crypto.randomUUID(), formatDate(new Date()));
@@ -218,11 +216,9 @@
                 img = BOT_IMG
                 class_name = BOT_INTERNAL_NAME
                 display_name = BOT_DISPLAY_NAME
-                console.log(text)
                 const button = `<pre><button onclick="copyToClipboard(this)">Copy code</button>`
                 display_text = marked.parse(text)
                 display_text = display_text.replace("<pre>", button)
-                console.log(display_text)
             } else if (name === USER_INTERNAL_NAME) {
                 img = PERSON_IMG;
                 class_name = USER_INTERNAL_NAME;
@@ -281,9 +277,7 @@
         async function getBotResponse(userInput) {
             msgerInputArea.style.display = "none";
             msgLoader.style.display = "inline-flex";
-            console.log(window.enhancedRequest);
             let enhancedRequest = window.enhancedRequest;
-            console.log(enhancedRequest);
 
             // Bot Response
             updated_repsonse = getUpdatedConversations();
@@ -309,7 +303,6 @@
                 .then(response => response.json())
                 .then(data => {
                     // Assuming data contains a property 'text' with the response message
-                    console.log(data);
                     response = data["choices"][0]["message"]["content"]
                     if (data && response) {
                         appendMessage(BOT_INTERNAL_NAME, response, id, formatDate(new Date()));
@@ -390,7 +383,6 @@
                 contextDisplay.style.display = "none";
             } else {
                 first_lines = text.split('\n')
-                console.log(first_lines)
                 lines_to_display = first_lines.slice(0, 5).join('\n'); // Get the first 5 lines of the code
                 if (first_lines.length > 5) {
                     lines_to_display += "\n...";
