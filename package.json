@@ -1,8 +1,8 @@
 {
   "name": "chatbotextension",
-  "displayName": "ChatbotExtension",
+  "displayName": "Chatbot Extension",
   "description": "An extension that provides a chatbot interface within VSCode to connect ChatGPT or your own chatbot.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "publisher": "AnnemarieWittig",
   "author": {
     "name": "Annemarie Wittig"
@@ -19,27 +19,27 @@
     "configuration": {
       "title": "Chatbot Extension",
       "properties": {
-        "chatbotextension.endpoint": {
+        "chatbotExtension.endpoint": {
           "type": "string",
           "default": "",
           "description": "The endpoint for the chatbot API."
         },
-        "chatbotextension.apiKey": {
+        "chatbotExtension.API Key": {
           "type": "string",
           "default": "",
           "description": "The API key for the chatbot API."
         },
-        "chatbotextension.model": {
+        "chatbotExtension.model": {
           "type": "string",
           "default": "",
           "description": "The model used (e.g. gpt-3.5-turbo), if needed."
         },
-        "chatbotextension.temperature": {
+        "chatbotExtension.temperature": {
           "type": "number",
           "default": 0.7,
           "description": "The temperature for the model, if needed."
         },
-        "chatbotextension.enhancedRequest": {
+        "chatbotExtension.enhancedRequest": {
           "type": "boolean",
           "default": false,
           "description": "The requests sent to the model can be enhanced with IDs and times. Must be false when using chatGPT."

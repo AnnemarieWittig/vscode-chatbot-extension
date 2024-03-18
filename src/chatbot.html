@@ -28,14 +28,20 @@
                 <p class="title">GPT-4</p>
             </div>
             <div>
-                <button class="new-chat-btn">
-                    <img class="new-chat-img" src="{{newbutton}}"
-                        alt="Toggle Theme">
-                </button>
-                <button class="theme-btn">
-                    <img class="theme-img" src="{{buttonimage}}"
-                        alt="Toggle Theme">
-                </button>
+                <div class="tooltip">
+                    <button class="new-chat-btn">
+                        <img class="new-chat-img" src="{{newbutton}}"
+                            alt="Toggle Theme">
+                    </button>
+                    <span class="tooltiptext">New Chat</span>
+                </div>
+                <div class="tooltip">
+                    <button class="theme-btn">
+                        <img class="theme-img" src="{{buttonimage}}"
+                            alt="Toggle Theme">
+                    </button>
+                    <span class="tooltiptext">Toggle Theme</span>
+                </div>
             </div>
         </div>
 
@@ -383,8 +389,15 @@
             if (selectedCode === "") {
                 contextDisplay.style.display = "none";
             } else {
+                first_lines = text.split('\n')
+                console.log(first_lines)
+                lines_to_display = first_lines.slice(0, 5).join('\n'); // Get the first 5 lines of the code
+                if (first_lines.length > 5) {
+                    lines_to_display += "\n...";
+                }
+
                 contextDisplay.style.display = "flex";
-                contextSelection.innerHTML = `${filename}: lines ${startLine}-${endLine} is sent to the model as context.`;
+                contextSelection.innerText = `The following lines ${startLine}-${endLine} from ${filename} are sent to the model as context: \n${lines_to_display}`;
             }
         }
 
