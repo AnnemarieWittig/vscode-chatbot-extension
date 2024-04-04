@@ -401,15 +401,7 @@
             if (selectedCode === "") {
                 contextDisplay.style.display = "none";
             } else {
-                first_lines = text.split('\n')
-                lines_to_display = first_lines.slice(0, 10).join('\n'); // Get the first 5 lines of the code
-                if (first_lines.length > 10) {
-                    lines_to_display += "\n...";
-                }
-                first_lines = text.split('\n')
-                let lines = first_lines.length;
-
-                text = marked.parse(`\`\`\`\n${lines_to_display}\n\`\`\``).replace("<pre>", "<pre class='selected-code-block'>");
+                text = marked.parse(`\`\`\`\n${text}\n\`\`\``).replace("<pre>", "<pre class='selected-code-block'>");
 
                 lines_to_display = `<p class="describing-text">The following lines ${startLine+1}-${endLine+1} from ${filename} are sent to the model as context:</p> <br> ${text}`;
 
