@@ -39,6 +39,7 @@ function activate(context) {
 		const newchat = getIconWebUri(panel, context, 'chat-add-icon.png');
 		const bot = getIconWebUri(panel, context, 'bot-icon.png');
 		const user = getIconWebUri(panel, context, 'user-icon.png');
+		const warning = getIconWebUri(panel, context, 'warning.png');
 
         const htmlPath = path.join(context.extensionPath, 'src', 'chatbot.html');
         let htmlContent = fs.readFileSync(htmlPath, 'utf8');
@@ -51,6 +52,7 @@ function activate(context) {
 		htmlContent = htmlContent.replace('{{newbutton}}', newchat.toString());
 		htmlContent = htmlContent.replace('{{botimage}}', bot.toString());
 		htmlContent = htmlContent.replace('{{userimage}}', user.toString());
+		htmlContent = htmlContent.replace('{{warning}}', warning.toString());
 
         panel.webview.html = htmlContent;
 

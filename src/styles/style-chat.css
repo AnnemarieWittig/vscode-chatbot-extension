@@ -168,9 +168,7 @@ button {
 }
 
 .context-selection {
-  color: black;
-  filter: var(--filter);
-  text-align: center;
+  width: var(--chat-width);
 }
 
 .new-chat-img {
@@ -434,6 +432,20 @@ pre code.hljs {
   float: right;
 }
 
+.describing-text {
+  font-size: small;
+  
+}
+
+.selected-code-block {
+  background-color: var(--header-bg-color);
+  margin-top: 0;
+  padding: 5px;
+  font-size: small;
+  max-height: 10em;
+}
+
+
 .tooltip {
   position: relative;
   display: inline-block;
@@ -457,4 +469,23 @@ pre code.hljs {
 
 .tooltip:hover .tooltiptext {
   visibility: visible;
+}
+
+/* Visual Struggle indicator */
+.title-area {
+  display: flex;
+}
+
+.warning-icon {
+  height: 3vh;
+  border-radius: 20px;
+  padding: 2px; 
+  min-height: 20px;
+  min-width: 30px;
+  max-height: 50px;
+  max-width: 50px;
+}
+
+.warning-img {
+  filter: var(--warningfilter);
 }

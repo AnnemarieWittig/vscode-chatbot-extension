@@ -7,7 +7,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>var exports = {};</script>
-    <!-- TODO: Properly import the sse.js file -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -24,14 +23,19 @@
 
     <div class="msger">
         <div class="head-bar">
-            <div>
-                <p class="title">GPT-4</p>
+            <div class="title-area">
+                <div class="warning-icon">
+                    <img class="warning-img" src="{{warning}}" alt="Student might be struggling">
+                </div>
+                <div>
+                    <p class="title">Chat</p>
+                </div>
             </div>
             <div>
                 <div class="tooltip">
                     <button class="new-chat-btn">
                         <img class="new-chat-img" src="{{newbutton}}"
-                            alt="Toggle Theme">
+                            alt="Create new Chat">
                     </button>
                     <span class="tooltiptext">New Chat</span>
                 </div>
@@ -59,7 +63,7 @@
         </div>
 
         <div class="context-display">
-            <p class="context-selection"></p>
+            <div class="context-selection"></div>
         </div>
         <form class="msger-inputarea">
             <textarea type="text" class="msger-input" id="textInput" autocomplete="off"
@@ -86,6 +90,7 @@
         const themeBtn = get(".theme-btn")
         const themeImg = get(".theme-img")
         const newChatBtn = get(".new-chat-btn")
+        const warningIcon = get(".warning-icon")
 
         // Icons made by Freepik from www.flaticon.com
         const BOT_IMG = "url({{botimage}})";
@@ -142,6 +147,7 @@
                 conversation_messages = [];
                 conversation_id = crypto.randomUUID();
                 msgerChat.innerHTML = "";
+                warningIcon.style.display = "none";
                 display_current_messages();
             //}
         })
@@ -223,7 +229,13 @@
                 img = PERSON_IMG;
                 class_name = USER_INTERNAL_NAME;
                 display_name = USER_DISPLAY_NAME;
-                display_text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;').replace(/ /g, '&nbsp;');
+                display_text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+                
+                while (display_text.includes("  ")) {
+                    display_text = display_text.replace("  ", "&nbsp;&nbsp;");
+                }
+
+                display_text = `<p style="overflow-wrap: anywhere;">${display_text}</p>`
             }
 
 
@@ -309,6 +321,13 @@
                     } else {
                         appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
                     }
+
+                    // struggling must exist and be true
+                    if (data.includes("struggling") && data["struggling"]) {
+                        warningIcon.style.display = "flex";
+                    } else {
+                        warningIcon.style.display = "none";
+                    }
                 })
                 .catch((error) => {
                     console.error('Error:', error);
@@ -383,18 +402,24 @@
                 contextDisplay.style.display = "none";
             } else {
                 first_lines = text.split('\n')
-                lines_to_display = first_lines.slice(0, 5).join('\n'); // Get the first 5 lines of the code
-                if (first_lines.length > 5) {
+                lines_to_display = first_lines.slice(0, 10).join('\n'); // Get the first 5 lines of the code
+                if (first_lines.length > 10) {
                     lines_to_display += "\n...";
                 }
+                first_lines = text.split('\n')
+                let lines = first_lines.length;
+
+                text = marked.parse(`\`\`\`\n${lines_to_display}\n\`\`\``).replace("<pre>", "<pre class='selected-code-block'>");
+
+                lines_to_display = `<p class="describing-text">The following lines ${startLine+1}-${endLine+1} from ${filename} are sent to the model as context:</p> <br> ${text}`;
 
                 contextDisplay.style.display = "flex";
-                contextSelection.innerText = `The following lines ${startLine}-${endLine} from ${filename} are sent to the model as context: \n${lines_to_display}`;
+                contextSelection.innerHTML = lines_to_display;
             }
         }
 
         display_current_messages();
-        title.innerHTML = "Chat";
+        warningIcon.style.display = "none";
 
     </script>
 </body>
