@@ -190,6 +190,18 @@ button {
   max-width: 50px;
 }
 
+.upload-btn {
+  background: unset;
+  font-size: medium;
+  color: var(--header-txt-color);
+  border: 0;
+  height: 3vh;
+}
+
+.upload-btn:hover {
+  background: var(--button-hover-color);
+}
+
 form {
   background-color: #fff;
   display: flex;

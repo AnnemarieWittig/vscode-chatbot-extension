@@ -10,6 +10,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://service.scadsai.uni-leipzig.de/sws-chatbot/static/libs/sse-wrapper/sse.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
@@ -33,18 +34,24 @@
             </div>
             <div>
                 <div class="tooltip">
+                    <button class="upload-btn" id="zipAndUpload">Aufgaben Abgeben</button>
+                    <span class="tooltiptext">Upload von allen Java Dateien im in VSCode geöffneten Ordner</span>
+                </div>
+            </div>
+            <div>
+                <div class="tooltip">
                     <button class="new-chat-btn">
                         <img class="new-chat-img" src="{{newbutton}}"
                             alt="Create new Chat">
                     </button>
-                    <span class="tooltiptext">New Chat</span>
+                    <span class="tooltiptext">Neuer Chat</span>
                 </div>
                 <div class="tooltip">
                     <button class="theme-btn">
                         <img class="theme-img" src="{{buttonimage}}"
                             alt="Toggle Theme">
                     </button>
-                    <span class="tooltiptext">Toggle Theme</span>
+                    <span class="tooltiptext">Farbmodus umschalten</span>
                 </div>
             </div>
         </div>
@@ -74,10 +81,17 @@
             </button>
         </form>
     </div>
-    </div>
+    
     <!-- partial -->
     <script src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
     <script>
+        const vscode = acquireVsCodeApi();
+        document.getElementById('zipAndUpload').addEventListener('click', () => {
+            vscode.postMessage({
+                command: 'zipAndUpload'
+            });
+        });
+
         const msgerForm = get(".msger-inputarea");
         const msgerInput = get(".msger-input");
         const msgerInputArea = get(".msger-inputarea");
@@ -179,7 +193,7 @@
 
         function display_current_messages() {
             if (this.conversation_messages.length === 0) {
-                conversation_messages = [{ "role": BOT_INTERNAL_NAME, "content": "I am your helpful assistant!", "id": crypto.randomUUID(), "date": formatDate(new Date()) }]
+                conversation_messages = [{ "role": BOT_INTERNAL_NAME, "content": "Hallo! Ich bin dein virtueller Assistent! Wenn du möchtest, kannst du in deinen Dateien Texte (zum Beispiel Code) markieren und diese werden automatisch mit an mich geschickt!", "id": crypto.randomUUID(), "date": formatDate(new Date()) }]
             }
             msgLoader.style.display = "none";
             this.conversation_messages.forEach((message) => {
@@ -259,6 +273,24 @@
             msgerChat.scrollTop = msgerChat.scrollHeight;
         }
 
+/*        function generateEventSource(prompt) {
+            return new SSE(window.endpoint, {
+                headers: { 'Content-Type': 'text/plain' },
+                payload: prompt
+            });
+        }
+
+        var source = generateEventSource(prompt);
+
+        source.addEventListener('message', function (e) {
+            msgElement = document.getElementById(id)
+
+            if (e.data == "") {
+            // data is only empty if html is returned
+            error_alert(msgElement, "You have no budget left.")
+            return
+        }})*/
+
         function getUpdatedConversations() {
             updated_messages = this.conversation_messages;
             if (selectedCode) {
@@ -323,11 +355,17 @@
                     }
 
                     // struggling must exist and be true
-                    if (data.includes("struggling") && data["struggling"]) {
+                    /*if ("struggling" in data && data["struggling"]) {
                         warningIcon.style.display = "flex";
                     } else {
                         warningIcon.style.display = "none";
+                    }*/
+                    if ("user" in data && data["user"]) {
+                        title.innerHTML = `Hello ${data["user"]}`
+                    } else {
+                        title.innerHTML = `Chat`
                     }
+
                 })
                 .catch((error) => {
                     console.error('Error:', error);
