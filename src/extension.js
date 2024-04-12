@@ -147,17 +147,20 @@ async function addFolderToZip(zip, folderUri, relativePath) {
     const entries = await vscode.workspace.fs.readDirectory(folderUri);
     for (const [name, type] of entries) {
         const filePath = vscode.Uri.joinPath(folderUri, name);
-        if (type === vscode.FileType.File) {
-			console.log(`Adding file: ${filePath}`)
+        if (type === vscode.FileType.File && name.endsWith('.java')) {
+            console.log(`Adding file: ${filePath}`);
             const fileContent = await vscode.workspace.fs.readFile(filePath);
-            zip.file(relativePath + name, fileContent); // Preserve folder structure
+            const zipEntryName = createZipEntryName(relativePath, name);
+            zip.file(zipEntryName, fileContent);
         } else if (type === vscode.FileType.Directory) {
-            await addFolderToZip(zip, filePath, relativePath + name + '/'); // Recursive call for subdirectory
+            await addFolderToZip(zip, filePath, relativePath + name + '/');
         }
     }
 }
 
-// TODO Filter for .java
+function createZipEntryName(relativePath, fileName) {
+    return relativePath.replace(/\//g, '_') + fileName;
+}
 
 async function uploadToServer(content) {
     let apiKey = getConfigValue('API Key');

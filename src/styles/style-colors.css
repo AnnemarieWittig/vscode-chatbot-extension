@@ -18,6 +18,7 @@
   --pre-bg: black;
   --filter: invert(100%) brightness(50%) saturate(0%);
   --warningfilter: saturate(60%);
+  --context-txt-color: lightgrey;
 }
 
 
@@ -41,4 +42,5 @@
   --pre-bg: black;
   --filter: invert(100%) brightness(80%) saturate(0%);
   --warningfilter: brightness(80%) saturate(50%);
+  --context-txt-color: #6d6d6d;
 }

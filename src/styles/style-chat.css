@@ -327,6 +327,12 @@ p {
   font-size: 0.85em;
 }
 
+.context-info {
+    display: flex;
+    flex-direction: row-reverse;
+    color: var(--context-txt-color)
+}
+
 .bot-msg .msg-bubble {
   background-color: var(--bot-color);
 }

@@ -14,7 +14,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
     <!-- and it's easy to individually load additional languages -->
     <link rel="stylesheet" href="{{colorsUri}}" />
     <link rel="stylesheet" href="{{chatUri}}" />
@@ -25,9 +25,9 @@
     <div class="msger">
         <div class="head-bar">
             <div class="title-area">
-                <div class="warning-icon">
+                <!-- <div class="warning-icon">
                     <img class="warning-img" src="{{warning}}" alt="Student might be struggling">
-                </div>
+                </div> -->
                 <div>
                     <p class="title">Chat</p>
                 </div>
@@ -54,7 +54,6 @@
             </div>
         </div>
 
-        <!-- <main class="msger-chat" onscroll="handle_auto_scroll()"> -->
         <main class="msger-chat" onscroll="handle_auto_scroll()">
         </main>
 
@@ -93,7 +92,6 @@
         const msgerInput = get(".msger-input");
         const msgerInputArea = get(".msger-inputarea");
         const msgerChat = get(".msger-chat");
-        const msgLoadingSpinner = get(".loading-spinner-area");
         const msgLoader = get(".chat-bubble");
         const contextDisplay = get(".context-display");
         const contextSelection = get(".context-selection");
@@ -101,7 +99,6 @@
         const themeBtn = get(".theme-btn")
         const themeImg = get(".theme-img")
         const newChatBtn = get(".new-chat-btn")
-        const warningIcon = get(".warning-icon")
 
         // Icons made by Freepik from www.flaticon.com
         const BOT_IMG = "url({{botimage}})";
@@ -159,7 +156,7 @@
             conversation_messages = [];
             conversation_id = crypto.randomUUID();
             msgerChat.innerHTML = "";
-            warningIcon.style.display = "none";
+            //warningIcon.style.display = "none";
             display_current_messages();
             //}
         })
@@ -211,7 +208,10 @@
 
             current_prompt = msgText
 
-            appendMessage(USER_INTERNAL_NAME, msgText, crypto.randomUUID(), formatDate(new Date()));
+            time = formatDate(new Date())
+            id = crypto.randomUUID()
+
+            appendMessage(USER_INTERNAL_NAME, msgText, id, time);
             getBotResponse(msgText);
 
             msgerInput.value = '';
@@ -219,13 +219,13 @@
 
         }
 
-        function add_finished_message(text, id, datetime) {
+        function add_finished_message(name, text, id, datetime) {
             this.conversation_messages.push({ "role": name, "content": text, "id": id, "date": datetime })
         }
 
         function appendMessage(name, text, id, datetime) {
+            add_finished_message(name, text, id, datetime);
             htmlMessage = getHtmlMessage(name, text, id, datetime);
-
             msgerChat.insertAdjacentHTML("beforeend", htmlMessage);
             msgerChat.scrollTop = msgerChat.scrollHeight;
         }
@@ -235,6 +235,7 @@
             let class_name = "";
             let display_name = "";
             let display_text = "";
+            let display_context = "";
 
             let msgHTML = ""
 
@@ -250,13 +251,15 @@
                 class_name = USER_INTERNAL_NAME;
                 display_name = USER_DISPLAY_NAME;
                 display_text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+                display_context = codecontext;
 
                 while (display_text.includes("  ")) {
                     display_text = display_text.replace("  ", "&nbsp;&nbsp;");
                 }
-
-                display_text = `<p style="overflow-wrap: anywhere;">${display_text}</p>`
             }
+
+            display_text = `<p style="overflow-wrap: anywhere;">${display_text}</p>`
+
 
 
             msgHTML = `
@@ -272,6 +275,9 @@
                     </div>
         
                     <div class="msg-text" id=${id}>${display_text}</div>
+                    <div>
+                    <div class="msg-info-time context-info">${display_context}</div>
+                    </div>
                 </div>
             </div>`;
 
@@ -325,8 +331,8 @@
 
         function generateEventSource(prompt, authorization, payload) {
             return new SSE(`${window.endpoint}`, {
-                headers: { 'Content-Type': 'text/plain', 'Authorization': authorization },
-                body: JSON.stringify(payload)
+                headers: { 'Content-Type': 'application/json', 'Authorization': authorization },
+                payload: JSON.stringify(payload)
             });
         }
 
@@ -334,10 +340,17 @@
 
             if (token == "<FINISH>") {
                 showAllFeedbackButtons();
-                return token
+                return token;
             }
             if (token == "<ERROR>") {
-                return token
+                return token;
+            }
+
+            if (token.includes("<USER>")) {
+                // select user between <USER> and </USER>
+                user = token.match(/<USER>(.*?)<\/USER>/)[1]
+                title.innerHTML = `Hallo ${user}`
+                token = ""
             }
 
             if (token !== "") {
@@ -359,9 +372,17 @@
             return tmpMsg
         }
 
+        function parseBotMessage(msg) {
+            let copyButton = `<pre><button onclick="copyToClipboard(this)">Copy code</button>`;
+            msg = marked.parse(msg);
+            msg = msg.replace("<pre>", copyButton);
+            return msg;
+        }
+
         function getBotResponse(userInput) {
             msgerInputArea.style.display = "none";
             msgLoader.style.display = "inline-flex";
+            auto_scroll = true;
             let enhancedRequest = window.enhancedRequest;
 
             // Bot Response
@@ -379,18 +400,19 @@
 
             var source = generateEventSource(userInput, `Bearer ${window.apiKey}`, payload);
             time = formatDate(new Date())
-            msgHtml = getHtmlMessage(USER_INTERNAL_NAME, userInput, id, time);
-            msgerChat.insertAdjacentHTML("beforeend", htmlMessage);
+            
+            msgHtml = getHtmlMessage(BOT_INTERNAL_NAME, "", id, time);
+            msgerChat.insertAdjacentHTML("beforeend", msgHtml);
 
             let msgTextDiv = document.getElementById(id);
 
             source.addEventListener('message', function (e) {
                 //msgElement = document.getElementById(id)
-                
+
                 message_text = ""
 
                 if (e.data == "") {
-                  // data is only empty if html is returned
+                    // data is only empty if html is returned
                     appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
                     return
                 }
@@ -399,12 +421,10 @@
 
                 if (msg === "<FINISH>") {
                     console.log("Finish token found.")
-                    console.log(msg)
 
                     msgerInputArea.style.display = "flex";
-                    msgLoadingSpinner.style.display = "none";
-                    add_finished_message(message_text, id, time);
-                    msgTextDiv.innerHTML = marked.parse(msgTextDiv.innerHTML).replace("<pre>", button);
+                    msgLoader.style.display = "none";
+                    add_finished_message(BOT_INTERNAL_NAME, message_text, id, time);
                     return
                 }
 
@@ -420,48 +440,48 @@
                     return
                 }
 
-                msgTextDiv.innerHTML += msg;
+                msgTextDiv.innerHTML = parseBotMessage(msg);
+                
                 //appendMessage(BOT_INTERNAL_NAME, msg, id, formatDate(new Date()));
                 //highlightCode(id);
             });
 
-
             source.stream()
             current_bot_message = "";
         }
-                /*.then(response => response.json())
-            .then(data => {
-                // Assuming data contains a property 'text' with the response message
-                response = data["choices"][0]["message"]["content"]
-                if (data && response) {
-                    appendMessage(BOT_INTERNAL_NAME, response, id, formatDate(new Date()));
-                } else {
-                    appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
-                }
+        /*.then(response => response.json())
+    .then(data => {
+        // Assuming data contains a property 'text' with the response message
+        response = data["choices"][0]["message"]["content"]
+        if (data && response) {
+            appendMessage(BOT_INTERNAL_NAME, response, id, formatDate(new Date()));
+        } else {
+            appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
+        }
 
-                // struggling must exist and be true
-                /*if ("struggling" in data && data["struggling"]) {
-                    warningIcon.style.display = "flex";
-                } else {
-                    warningIcon.style.display = "none";
-                }*//*
-                if ("user" in data && data["user"]) {
-                    title.innerHTML = `Hello ${data["user"]}`
-                } else {
-                    title.innerHTML = `Chat`
-                }
+        // struggling must exist and be true
+        /*if ("struggling" in data && data["struggling"]) {
+            warningIcon.style.display = "flex";
+        } else {
+            warningIcon.style.display = "none";
+        }*//*
+        if ("user" in data && data["user"]) {
+            ç
+        } else {
+            title.innerHTML = `Chat`
+        }
 
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
-            })
-            .finally(() => {
-                // Reset display states after fetch operation completes or fails
-                msgerInputArea.style.display = "flex";
-                msgLoader.style.display = "none";
-            });*/
-
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
+    })
+    .finally(() => {
+        // Reset display states after fetch operation completes or fails
+        msgerInputArea.style.display = "flex";
+        msgLoader.style.display = "none";
+    });*/
+/*
         async function abc(userInput) {
             msgerInputArea.style.display = "none";
             msgLoader.style.display = "inline-flex";
@@ -503,7 +523,7 @@
                         warningIcon.style.display = "flex";
                     } else {
                         warningIcon.style.display = "none";
-                    }*/
+                    }*//*
                     if ("user" in data && data["user"]) {
                         title.innerHTML = `Hello ${data["user"]}`
                     } else {
@@ -520,7 +540,7 @@
                     msgerInputArea.style.display = "flex";
                     msgLoader.style.display = "none";
                 });
-        }
+        }*/
 
         function showAllFeedbackButtons() {
             btns = document.getElementsByClassName("feedback-button");
@@ -576,24 +596,27 @@
         const input = document.getElementById('input');
         const messages = document.getElementById('messages');
         let selectedCode = "";
+        let codecontext = "";
 
         function updateWebview(text, filename, startLine, endLine) {
             selectedCode = text;
 
             if (selectedCode === "") {
                 contextDisplay.style.display = "none";
+                codecontext = "";
             } else {
                 text = marked.parse(`\`\`\`\n${text}\n\`\`\``).replace("<pre>", "<pre class='selected-code-block'>");
 
-                lines_to_display = `<p class="describing-text">The following lines ${startLine + 1}-${endLine + 1} from ${filename} are sent to the model as context:</p> <br> ${text}`;
+                lines_to_display = `<p class="describing-text">Die Zeilen ${startLine + 1}-${endLine + 1} aus der Datei ${filename} werden als Kontext zum Model geschickt:</p> <br> ${text}`;
 
                 contextDisplay.style.display = "flex";
                 contextSelection.innerHTML = lines_to_display;
+                codecontext = `Verwendet Kontext ${filename} ${startLine + 1}-${endLine + 1}`;
             }
         }
 
         display_current_messages();
-        warningIcon.style.display = "none";
+        //warningIcon.style.display = "none";
 
     </script>
 </body>
