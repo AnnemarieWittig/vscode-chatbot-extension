@@ -10,7 +10,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://service.scadsai.uni-leipzig.de/sws-chatbot/static/libs/sse-wrapper/sse.js"></script>
+    <script src="{{sseUri}}"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
@@ -41,15 +41,13 @@
             <div>
                 <div class="tooltip">
                     <button class="new-chat-btn">
-                        <img class="new-chat-img" src="{{newbutton}}"
-                            alt="Create new Chat">
+                        <img class="new-chat-img" src="{{newbutton}}" alt="Create new Chat">
                     </button>
                     <span class="tooltiptext">Neuer Chat</span>
                 </div>
                 <div class="tooltip">
                     <button class="theme-btn">
-                        <img class="theme-img" src="{{buttonimage}}"
-                            alt="Toggle Theme">
+                        <img class="theme-img" src="{{buttonimage}}" alt="Toggle Theme">
                     </button>
                     <span class="tooltiptext">Farbmodus umschalten</span>
                 </div>
@@ -76,12 +74,11 @@
             <textarea type="text" class="msger-input" id="textInput" autocomplete="off"
                 placeholder="Geben Sie eine Nachricht ein..."></textarea>
             <button type="submit" class="msger-send-btn">
-                <img class="theme-img" src="{{sendicon}}"
-                    alt="Send Message">
+                <img class="theme-img" src="{{sendicon}}" alt="Send Message">
             </button>
         </form>
     </div>
-    
+
     <!-- partial -->
     <script src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
     <script>
@@ -116,6 +113,7 @@
         const BOT_DISPLAY_NAME = "Assistant";
         const USER_DISPLAY_NAME = "You";
         const USER_INTERNAL_NAME = "user";
+
 
         var conversation_messages = []
 
@@ -158,11 +156,11 @@
             e.preventDefault;
             //var response = confirm("Are you sure you want to start a new chat? This will delete the current conversation.");
             //if (response) {
-                conversation_messages = [];
-                conversation_id = crypto.randomUUID();
-                msgerChat.innerHTML = "";
-                warningIcon.style.display = "none";
-                display_current_messages();
+            conversation_messages = [];
+            conversation_id = crypto.randomUUID();
+            msgerChat.innerHTML = "";
+            warningIcon.style.display = "none";
+            display_current_messages();
             //}
         })
 
@@ -221,14 +219,22 @@
 
         }
 
-        function appendMessage(name, text, id, datetime) {
-
+        function add_finished_message(text, id, datetime) {
             this.conversation_messages.push({ "role": name, "content": text, "id": id, "date": datetime })
+        }
+
+        function appendMessage(name, text, id, datetime) {
+            htmlMessage = getHtmlMessage(name, text, id, datetime);
+
+            msgerChat.insertAdjacentHTML("beforeend", htmlMessage);
+            msgerChat.scrollTop = msgerChat.scrollHeight;
+        }
+
+        function getHtmlMessage(name, text, id, datetime) {
             let img = "";
             let class_name = "";
             let display_name = "";
             let display_text = "";
-
 
             let msgHTML = ""
 
@@ -244,7 +250,7 @@
                 class_name = USER_INTERNAL_NAME;
                 display_name = USER_DISPLAY_NAME;
                 display_text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
-                
+
                 while (display_text.includes("  ")) {
                     display_text = display_text.replace("  ", "&nbsp;&nbsp;");
                 }
@@ -269,27 +275,26 @@
                 </div>
             </div>`;
 
-            msgerChat.insertAdjacentHTML("beforeend", msgHTML);
-            msgerChat.scrollTop = msgerChat.scrollHeight;
+            return msgHTML;
         }
 
-/*        function generateEventSource(prompt) {
-            return new SSE(window.endpoint, {
-                headers: { 'Content-Type': 'text/plain' },
-                payload: prompt
-            });
-        }
-
-        var source = generateEventSource(prompt);
-
-        source.addEventListener('message', function (e) {
-            msgElement = document.getElementById(id)
-
-            if (e.data == "") {
-            // data is only empty if html is returned
-            error_alert(msgElement, "You have no budget left.")
-            return
-        }})*/
+        /*        function generateEventSource(prompt) {
+                    return new SSE(window.endpoint, {
+                        headers: { 'Content-Type': 'text/plain' },
+                        payload: prompt
+                    });
+                }
+        
+                var source = generateEventSource(prompt);
+        
+                source.addEventListener('message', function (e) {
+                    msgElement = document.getElementById(id)
+        
+                    if (e.data == "") {
+                    // data is only empty if html is returned
+                    error_alert(msgElement, "You have no budget left.")
+                    return
+                }})*/
 
         function getUpdatedConversations() {
             updated_messages = this.conversation_messages;
@@ -318,7 +323,146 @@
             }
         }
 
-        async function getBotResponse(userInput) {
+        function generateEventSource(prompt, authorization, payload) {
+            return new SSE(`${window.endpoint}`, {
+                headers: { 'Content-Type': 'text/plain', 'Authorization': authorization },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        function handleToken(token) {
+
+            if (token == "<FINISH>") {
+                showAllFeedbackButtons();
+                return token
+            }
+            if (token == "<ERROR>") {
+                return token
+            }
+
+            if (token !== "") {
+                current_bot_message += token;
+                current_bot_message = current_bot_message.replace("<start>", "")
+                current_bot_message = current_bot_message.replace("<end>", "")
+                current_bot_message = current_bot_message.replace("<br/>", "\n")
+                current_bot_message = current_bot_message.replace("<br>", "\n")
+            }
+
+            tmpMsg = current_bot_message
+
+            if ((tmpMsg.match(/```/g) || []).length % 2 != 0) {
+                tmpMsg += " \n```"
+            }
+            if (auto_scroll) {
+                msgerChat.scrollTop = msgerChat.scrollHeight;
+            }
+            return tmpMsg
+        }
+
+        function getBotResponse(userInput) {
+            msgerInputArea.style.display = "none";
+            msgLoader.style.display = "inline-flex";
+            let enhancedRequest = window.enhancedRequest;
+
+            // Bot Response
+            updated_repsonse = getUpdatedConversations();
+            payload_response = prepareMessages(updated_repsonse, enhancedRequest);
+            payload = {
+                "model": window.model,
+                "messages": payload_response,
+                "temperature": window.temperature
+            }
+            if (enhancedRequest) {
+                payload["conversation_id"] = conversation_id;
+            }
+            id = crypto.randomUUID()
+
+            var source = generateEventSource(userInput, `Bearer ${window.apiKey}`, payload);
+            time = formatDate(new Date())
+            msgHtml = getHtmlMessage(USER_INTERNAL_NAME, userInput, id, time);
+            msgerChat.insertAdjacentHTML("beforeend", htmlMessage);
+
+            let msgTextDiv = document.getElementById(id);
+
+            source.addEventListener('message', function (e) {
+                //msgElement = document.getElementById(id)
+                
+                message_text = ""
+
+                if (e.data == "") {
+                  // data is only empty if html is returned
+                    appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
+                    return
+                }
+
+                msg = handleToken(e.data);
+
+                if (msg === "<FINISH>") {
+                    console.log("Finish token found.")
+                    console.log(msg)
+
+                    msgerInputArea.style.display = "flex";
+                    msgLoadingSpinner.style.display = "none";
+                    add_finished_message(message_text, id, time);
+                    msgTextDiv.innerHTML = marked.parse(msgTextDiv.innerHTML).replace("<pre>", button);
+                    return
+                }
+
+                if (msg === "<ERROR>") {
+                    appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
+                    return
+                }
+
+                next_is_user = false
+
+                if (msg === "<USER>") {
+                    next_is_user = true
+                    return
+                }
+
+                msgTextDiv.innerHTML += msg;
+                //appendMessage(BOT_INTERNAL_NAME, msg, id, formatDate(new Date()));
+                //highlightCode(id);
+            });
+
+
+            source.stream()
+            current_bot_message = "";
+        }
+                /*.then(response => response.json())
+            .then(data => {
+                // Assuming data contains a property 'text' with the response message
+                response = data["choices"][0]["message"]["content"]
+                if (data && response) {
+                    appendMessage(BOT_INTERNAL_NAME, response, id, formatDate(new Date()));
+                } else {
+                    appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
+                }
+
+                // struggling must exist and be true
+                /*if ("struggling" in data && data["struggling"]) {
+                    warningIcon.style.display = "flex";
+                } else {
+                    warningIcon.style.display = "none";
+                }*//*
+                if ("user" in data && data["user"]) {
+                    title.innerHTML = `Hello ${data["user"]}`
+                } else {
+                    title.innerHTML = `Chat`
+                }
+
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                appendMessage(BOT_INTERNAL_NAME, "There was an error in generating the reply. If this continues, please check if all settings are correct, saved and that the endpoint reacts correctly.", id, formatDate(new Date()));
+            })
+            .finally(() => {
+                // Reset display states after fetch operation completes or fails
+                msgerInputArea.style.display = "flex";
+                msgLoader.style.display = "none";
+            });*/
+
+        async function abc(userInput) {
             msgerInputArea.style.display = "none";
             msgLoader.style.display = "inline-flex";
             let enhancedRequest = window.enhancedRequest;
@@ -441,7 +585,7 @@
             } else {
                 text = marked.parse(`\`\`\`\n${text}\n\`\`\``).replace("<pre>", "<pre class='selected-code-block'>");
 
-                lines_to_display = `<p class="describing-text">The following lines ${startLine+1}-${endLine+1} from ${filename} are sent to the model as context:</p> <br> ${text}`;
+                lines_to_display = `<p class="describing-text">The following lines ${startLine + 1}-${endLine + 1} from ${filename} are sent to the model as context:</p> <br> ${text}`;
 
                 contextDisplay.style.display = "flex";
                 contextSelection.innerHTML = lines_to_display;

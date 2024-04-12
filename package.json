@@ -70,17 +70,20 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.86.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
-    "eslint": "^8.56.0",
-    "typescript": "^5.3.3",
+    "@types/vscode": "^1.86.0",
     "@vscode/test-cli": "^0.0.4",
-    "@vscode/test-electron": "^2.3.9"
+    "@vscode/test-electron": "^2.3.9",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/AnnemarieWittig/vscode-chatbot-extension"
   },
-  "homepage": "https://github.com/AnnemarieWittig/vscode-chatbot-extension/blob/main/README.md"
+  "homepage": "https://github.com/AnnemarieWittig/vscode-chatbot-extension/blob/main/README.md",
+  "dependencies": {
+    "sse.js": "^2.4.1"
+  }
 }

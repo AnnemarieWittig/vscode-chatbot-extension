@@ -11,6 +11,14 @@ function getCssWebUri (panel, context, filename) {
 	return styles;
 }
 
+function getSseWebUri (panel, context, filename) {
+	let styles = panel.webview.asWebviewUri(vscode.Uri.file(
+		path.join(context.extensionPath, 'src', 'libs', 'sse-wrapper', filename)
+	)); 
+
+	return styles;
+}
+
 function getIconWebUri (panel, context, filename) {
 	let icon = panel.webview.asWebviewUri(vscode.Uri.file(
 		path.join(context.extensionPath, 'src', 'icons', filename)
@@ -33,6 +41,7 @@ function activate(context) {
 
 		const chatstyles = getCssWebUri(panel, context, 'style-chat.css');
 		const colorstyles = getCssWebUri(panel, context, 'style-colors.css');
+        const sseuri = getSseWebUri(panel, context, 'sse.js');
 
 		const lightmode = getIconWebUri(panel, context, 'light-mode-toggle-icon.png');
 		const darkmode = getIconWebUri(panel, context, 'dark-mode-toggle-icon.png');
@@ -47,6 +56,7 @@ function activate(context) {
 		
 		htmlContent = htmlContent.replace('{{colorsUri}}', chatstyles.toString());
 		htmlContent = htmlContent.replace('{{chatUri}}', colorstyles.toString());
+		htmlContent = htmlContent.replace('{{sseUri}}', sseuri.toString());
 		htmlContent = htmlContent.replace('{{darkmodeimage}}', darkmode.toString());
 		htmlContent = htmlContent.replace('{{lightmodeimage}}', lightmode.toString());
 		htmlContent = htmlContent.replace('{{sendicon}}', send.toString());
