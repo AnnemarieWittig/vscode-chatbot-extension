@@ -118,78 +118,80 @@ function activate(context) {
             })
         );
     }));
-}
 
-async function zipAndUploadFiles() {
-    const zip = new JSZip();
-	console.log(vscode.workspace.workspaceFolders)
-    // const folderPath = vscode.workspace.workspaceFolders[0].uri.path ;
-	// TODO change to specified folder path?
-	const folderPath = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : undefined;
-
-    if (!folderPath) {
-        console.log("No folder open.");
-        return;
+    async function zipAndUploadFiles() {
+        const zip = new JSZip();
+        console.log(vscode.workspace.workspaceFolders)
+        // const folderPath = vscode.workspace.workspaceFolders[0].uri.path ;
+        // TODO change to specified folder path?
+        const folderPath = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : undefined;
+    
+        if (!folderPath) {
+            console.log("No folder open.");
+            return;
+        }
+    
+        // Start the recursive zipping process
+        await addFolderToZip(zip, folderPath, '');
+    
+        zip.generateAsync({ type: 'nodebuffer' })
+            .then(function(content) {
+                // Upload content to server
+                uploadToServer(content);
+            })
+            .catch(err => console.error(err));
     }
-
-    // Start the recursive zipping process
-    await addFolderToZip(zip, folderPath, '');
-
-    zip.generateAsync({ type: 'nodebuffer' })
-        .then(function(content) {
-            // Upload content to server
-            uploadToServer(content);
+    
+    async function addFolderToZip(zip, folderUri, relativePath) {
+        const entries = await vscode.workspace.fs.readDirectory(folderUri);
+        for (const [name, type] of entries) {
+            const filePath = vscode.Uri.joinPath(folderUri, name);
+            if (type === vscode.FileType.File && name.endsWith('.java')) {
+                console.log(`Adding file: ${filePath}`);
+                const fileContent = await vscode.workspace.fs.readFile(filePath);
+                const zipEntryName = createZipEntryName(relativePath, name);
+                zip.file(zipEntryName, fileContent);
+            } else if (type === vscode.FileType.Directory) {
+                await addFolderToZip(zip, filePath, relativePath + name + '/');
+            }
+        }
+    }
+    
+    function createZipEntryName(relativePath, fileName) {
+        return relativePath.replace(/\//g, '_') + fileName;
+    }
+    
+    async function uploadToServer(content) {
+        let apiKey = getConfigValue('API Key');
+        console.log(apiKey)
+        const serverUrl = getConfigValue('Upload Endpoint'); // 
+    
+        // Create a FormData object and append the file
+        let formData = new FormData();
+        formData.append('file', new Blob([content], {type: 'application/zip'}), 'upload.zip');
+    
+        fetch(serverUrl, {
+            method: 'POST',
+            body: formData, // Use the FormData object as the request body
+            headers: {
+                // Omit 'Content-Type' header, the browser will set it with the correct boundary.
+                'Authorization': `Bearer ${apiKey}`
+            }
         })
-        .catch(err => console.error(err));
-}
-
-async function addFolderToZip(zip, folderUri, relativePath) {
-    const entries = await vscode.workspace.fs.readDirectory(folderUri);
-    for (const [name, type] of entries) {
-        const filePath = vscode.Uri.joinPath(folderUri, name);
-        if (type === vscode.FileType.File && name.endsWith('.java')) {
-            console.log(`Adding file: ${filePath}`);
-            const fileContent = await vscode.workspace.fs.readFile(filePath);
-            const zipEntryName = createZipEntryName(relativePath, name);
-            zip.file(zipEntryName, fileContent);
-        } else if (type === vscode.FileType.Directory) {
-            await addFolderToZip(zip, filePath, relativePath + name + '/');
-        }
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error('Error uploading file: ', error));
+    }
+    
+    
+    function getConfigValue(key) {
+        const config = vscode.workspace.getConfiguration('chatbotExtension');
+        const apiKey = config.get(key);
+        return apiKey;
     }
 }
 
-function createZipEntryName(relativePath, fileName) {
-    return relativePath.replace(/\//g, '_') + fileName;
-}
 
-async function uploadToServer(content) {
-    let apiKey = getConfigValue('API Key');
-	console.log(apiKey)
-    const serverUrl = getConfigValue('Upload Endpoint'); // 
-
-    // Create a FormData object and append the file
-    let formData = new FormData();
-    formData.append('file', new Blob([content], {type: 'application/zip'}), 'upload.zip');
-
-    fetch(serverUrl, {
-        method: 'POST',
-        body: formData, // Use the FormData object as the request body
-        headers: {
-            // Omit 'Content-Type' header, the browser will set it with the correct boundary.
-            'Authorization': `Bearer ${apiKey}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error('Error uploading file: ', error));
-}
-
-
-function getConfigValue(key) {
-    const config = vscode.workspace.getConfiguration('chatbotExtension');
-    const apiKey = config.get(key);
-    return apiKey;
-}
 
 function sendConfigToWebview(panel) {
     const config = vscode.workspace.getConfiguration('chatbotExtension');

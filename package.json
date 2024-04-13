@@ -2,7 +2,7 @@
   "name": "chatbotextension",
   "displayName": "Chatbot Extension",
   "description": "An extension that provides a chatbot interface within VSCode to connect ChatGPT or your own chatbot.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "AnnemarieWittig",
   "author": {
     "name": "Annemarie Wittig"
@@ -78,12 +78,12 @@
     "eslint": "^8.56.0",
     "typescript": "^5.3.3"
   },
+  "dependencies": {
+    "jszip": "^3.10.1"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/AnnemarieWittig/vscode-chatbot-extension"
   },
-  "homepage": "https://github.com/AnnemarieWittig/vscode-chatbot-extension/blob/main/README.md",
-  "dependencies": {
-    "sse.js": "^2.4.1"
-  }
+  "homepage": "https://github.com/AnnemarieWittig/vscode-chatbot-extension/blob/main/README.md"
 }
